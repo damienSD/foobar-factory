@@ -28,7 +28,7 @@ ENVS="\
 "
 
 start() {
-    echo -e "[Foobar production] Starting..."
+    echo -e "[Foobar factory] Starting..."
     clean
     prepare
     docker run -tti --detach $ENVS --name ${FACTORY_NAME} --network ${NETWORK_NAME} -v $(pwd)/back/:/app/ -v /var/run/docker.sock:/var/run/docker.sock ${BACK_IMAGE} >/dev/null 2>&1
@@ -38,7 +38,7 @@ start() {
 }
 
 dev() {
-    echo -e "[Foobar production] Starting dev..."
+    echo -e "[Foobar factory] Starting dev..."
     clean
     prepare
     docker run -tti --detach $ENVS --name ${FACTORY_NAME} --network ${NETWORK_NAME} -v $(pwd)/back/:/app/ -v /var/run/docker.sock:/var/run/docker.sock ${BACK_IMAGE}
@@ -82,7 +82,7 @@ waitAndDebug() {
 }
 
 end() {
-    echo -e "[Foobar production] Stopping..."
+    echo -e "[Foobar factory] Stopping..."
     clean
     exit
 }
