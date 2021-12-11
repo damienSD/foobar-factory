@@ -30,16 +30,19 @@ vendu
 A chaque changement de type d'activité, le robot doit se déplacer à un nouveau
 poste de travail, cela l'occupe pendant 5s.
 
-# Launch 
+# Getting started 
 
 ```bash
+git clone https://github.com/damienSD/foobar-factory.git foobar-factory
+cd foobar-factory/
 ./do start
 ```
 or
 ```bash
 ./do dev
+# for the developpement stack, that give more verbosity in standard ouput and nextJS dev mode
 ```
-for the developpement stack, that give more verbosity in standard ouput
+
 
 Open a browser at http://127.0.0.1:8000/ to get control of the Factory
 
