@@ -19,6 +19,7 @@ const Home: NextPage = () => {
     }, [])
 
     console.log(data)
+    const { factory, robots, stock, built } = data
 
     return (
         <div>
@@ -36,10 +37,15 @@ const Home: NextPage = () => {
 
             <main>
                 <h1>Foobar factory</h1>
-                <Button variant="contained" onClick={handleStartProduction}>
-                    {' '}
-                    Start Production{' '}
-                </Button>
+                {factory.started ? (
+                    <Button variant="contained" onClick={handleStartProduction}>
+                        Stop Production!
+                    </Button>
+                ) : (
+                    <Button variant="contained" onClick={handleStartProduction}>
+                        Start Production
+                    </Button>
+                )}
             </main>
         </div>
     )
