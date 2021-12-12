@@ -1,54 +1,11 @@
-import type { NextPage } from 'next'
 import React from 'react'
-import Head from 'next/head'
 import * as _ from 'lodash'
-import { createTheme } from '@mui/material/styles'
-import robotFoo from '../assets/robotFoo.png'
-import robotBar from '../assets/robotBar.png'
-import robotFooBar from '../assets/robotFooBar.png'
-import robotChange from '../assets/robotChange.png'
-import robotWaiting from '../assets/robotWaiting.png'
-import {
-    Chip,
-    Stack,
-    Button,
-    Avatar,
-    AppBar,
-    Toolbar,
-    Box,
-    FormGroup,
-    FormControlLabel,
-    Switch,
-    Typography,
-    ThemeProvider,
-    CssBaseline,
-    Badge,
-    Tooltip,
-    Divider,
-} from '@mui/material'
-import EuroIcon from '@mui/icons-material/Euro'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import CodeIcon from '@mui/icons-material/Code'
+import { Chip, Avatar, Typography, Divider } from '@mui/material'
 import WatchLaterIcon from '@mui/icons-material/WatchLater'
-import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing'
 import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
 import FactoryIcon from '@mui/icons-material/Factory'
-
-type FactoryAction = 'stop' | 'start'
-
-const Info = (props) => (
-    <Typography
-        {...props}
-        sx={{ display: 'inline', marginRight: 2 }}
-        component="span"
-        variant="body2"
-    >
-        {props.children} {'  '}
-    </Typography>
-)
 
 const Factory = ({ data = {} }) => {
     const { factory = {}, historic = {}, robots = {} } = data
@@ -106,39 +63,28 @@ const Factory = ({ data = {} }) => {
                                 <br />
                                 <Info color="text.primary">Historic:</Info>
                                 <Info>Foos collected: {foosHistoric}</Info>
-                                <Info>
-                                    Bars collected:
-                                    {barsHistoric}
-                                </Info>
+                                <Info>Bars collected: {barsHistoric}</Info>
                                 <Info>FooBars assembled: {foobarsHistoric}</Info>
                                 <Info color="error">FooBars failed: {foobarsFailedHistoric}</Info>
-                                <Info>
-                                    Credits gains:
-                                    {historic.credits}
-                                </Info>
+                                <Info>Credits gains: {historic.credits}</Info>
                             </React.Fragment>
                         }
                     />
-                    {/* <ListItemText
-                        primary={'Historic'}
-                        secondary={
-                            <React.Fragment>
-                                <Typography
-                                    sx={{ display: 'inline' }}
-                                    component="span"
-                                    variant="body2"
-                                    color="text.primary"
-                                >
-                                    Details:
-                                </Typography>
-                                &nbsp;{message}
-                            </React.Fragment>
-                        }
-                    /> */}
                 </ListItem>
             </div>
         </div>
     )
 }
+
+const Info = (props) => (
+    <Typography
+        {...props}
+        sx={{ display: 'inline', marginRight: 1 }}
+        component="span"
+        variant="body2"
+    >
+        {props.children} {'  '}
+    </Typography>
+)
 
 export default Factory

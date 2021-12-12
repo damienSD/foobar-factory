@@ -113,8 +113,7 @@ class Factory:
         self.robots = []
 
         # Reset storage values
-        redis.delete(FACTORY_SUCCESS)
-        redis.delete(FACTORY_STARTED)
+        redis.flushdb()
         redis.set(STOCK_FOOS, 0)
         redis.set(STOCK_BARS, 0)
         redis.set(STOCK_FOOBARS, 0)

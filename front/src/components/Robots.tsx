@@ -19,6 +19,9 @@ import WatchLaterIcon from '@mui/icons-material/WatchLater'
 import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import CodeIcon from '@mui/icons-material/Code'
 
 const SortSelect = ({ value, onChange }) => {
     return (
@@ -32,9 +35,9 @@ const SortSelect = ({ value, onChange }) => {
                     <em>--</em>
                 </MenuItem>
                 <MenuItem value={'bestFoos'}>Best Foos miner</MenuItem>
-                <MenuItem value={'bestFoos'}>Best Bars miner</MenuItem>
-                <MenuItem value={'bestFoos'}>Best FooBars builder</MenuItem>
-                <MenuItem value={'bestFoos'}>Best FooBars looser</MenuItem>
+                <MenuItem value={'bestBars'}>Best Bars miner</MenuItem>
+                <MenuItem value={'bestFoobars'}>Best FooBars builder</MenuItem>
+                <MenuItem value={'bestFoobarsFails'}>Best FooBars looser</MenuItem>
             </Select>
         </FormControl>
     )
@@ -53,10 +56,17 @@ const Robots = ({ data }) => {
     })
 
     switch (sortBy) {
-        case '':
-            sortedRobots = _.sortBy(sortedRobots)
+        case 'bestFoos':
+            sortedRobots = _.sortBy(sortedRobots, (r) => -parseInt(r.historic?.foos))
             break
-        case '':
+        case 'bestBars':
+            sortedRobots = _.sortBy(sortedRobots, (r) => -parseInt(r.historic?.bars))
+            break
+        case 'bestFoobars':
+            sortedRobots = _.sortBy(sortedRobots, (r) => -parseInt(r.historic?.foobars))
+            break
+        case 'bestFoobarsFails':
+            sortedRobots = _.sortBy(sortedRobots, (r) => -parseInt(r.historic?.foobarsFails))
             break
     }
 
@@ -74,7 +84,7 @@ const Robots = ({ data }) => {
 
 const Robot = ({ data, robots = [] }) => {
     // const robotsCount = _.keys(robots).length
-    const { activity, waiting, message } = data || {}
+    const { activity, waiting, message, historic } = data || {}
 
     let image = robotWaiting
     let title = activity
@@ -125,7 +135,7 @@ const Robot = ({ data, robots = [] }) => {
                     primary={
                         <div>
                             {title}
-                            {waiting > 0 ? (
+                            {activity && waiting > 0 ? (
                                 <span>
                                     &nbsp;for
                                     <span style={{ color: 'orange' }}>
@@ -137,15 +147,16 @@ const Robot = ({ data, robots = [] }) => {
                     }
                     secondary={
                         <React.Fragment>
-                            <Typography
-                                sx={{ display: 'inline' }}
-                                component="span"
-                                variant="body2"
-                                color="text.primary"
-                            >
-                                Details:
-                            </Typography>
+                            <Info color="text.primary">Details:</Info>
                             &nbsp;{message || 'waiting'}
+                            <br />
+                            <Info color="text.primary">Historic:</Info>
+                            {historic?.foos && <Info>{historic?.foos} Foos</Info>}
+                            {historic?.bars && <Info>{historic?.bars} Bars</Info>}
+                            {historic?.foobars && <Info>{historic?.foobars} Foobars</Info>}
+                            {historic?.foobarsFails && (
+                                <Info color="error">{historic?.foobarsFails} Foobars Fails</Info>
+                            )}
                         </React.Fragment>
                     }
                 />
@@ -153,6 +164,17 @@ const Robot = ({ data, robots = [] }) => {
         </div>
     )
 }
+
+const Info = (props) => (
+    <Typography
+        {...props}
+        sx={{ display: 'inline', marginRight: 1 }}
+        component="span"
+        variant="body2"
+    >
+        {props.children} {'  '}
+    </Typography>
+)
 
 export default Robots
 export { Robot }
