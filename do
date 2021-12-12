@@ -34,7 +34,7 @@ start() {
     docker build --quiet -t ${FRONT_IMAGE} ./front/ >/dev/null 2>&1
     docker network create  ${NETWORK_NAME}  >/dev/null 2>&1
     docker run -tti --detach $ENVS --name ${FACTORY_NAME} --network ${NETWORK_NAME} -v $(pwd)/back/:/app/ -v /var/run/docker.sock:/var/run/docker.sock ${BACK_IMAGE} >/dev/null 2>&1
-    docker run -tti --detach $ENVS --name ${FRONT_NAME} --network ${NETWORK_NAME} -p "$PORT:8000" -v $(pwd)/front/:/app/ ${FRONT_IMAGE} >/dev/null 2>&1
+    docker run -tti --detach $ENVS --name ${FRONT_NAME} --network ${NETWORK_NAME} -p "$PORT:8000"  ${FRONT_IMAGE} >/dev/null 2>&1
     waitAndDebug --filter "name=${FACTORY_NAME}" --filter "name=${ROBOT_NAME}"
     clean
 }
