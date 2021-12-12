@@ -86,7 +86,7 @@ const Counters = ({ data }) => {
 }
 
 const Factory = ({ data = {} }) => {
-    const { factory = {}, built = {} } = data
+    const { factory = {}, historic = {} } = data
     const { activity, waiting, message } = factory
     return (
         <div className="factory">
@@ -136,6 +136,17 @@ const Factory = ({ data = {} }) => {
                                     Details:
                                 </Typography>
                                 &nbsp;{message}
+                                <br />
+                                <Typography
+                                    sx={{ display: 'inline' }}
+                                    component="span"
+                                    variant="body2"
+                                    color="text.primary"
+                                >
+                                    Historic:
+                                </Typography>
+                                &nbsp; Foos collected: {historic.foos}, Bars collected:
+                                {historic.bars}, FooBars assembled: {historic.foobars}
                             </React.Fragment>
                         }
                     />
@@ -183,21 +194,27 @@ const Robot = ({ data = {}, index, robots = [] }) => {
     const { activity, waiting, message } = data
 
     let image = robotWaiting
+    let title = activity
     switch (activity) {
         case 'foo':
             image = robotFoo
+            title = 'Mining Foo'
             break
         case 'bar':
             image = robotBar
+            title = 'Mining Bar'
             break
         case 'foobar':
             image = robotFooBar
+            title = 'Assemblying FooBar'
             break
         case 'change':
             image = robotChange
+            title = 'Changing activity'
             break
         case 'waiting':
             image = robotWaiting
+            title = 'Waiting'
             break
     }
 
@@ -224,7 +241,7 @@ const Robot = ({ data = {}, index, robots = [] }) => {
                 <ListItemText
                     primary={
                         <div>
-                            {activity}
+                            {title}
                             {waiting ? (
                                 <span>
                                     &nbsp;for
@@ -323,8 +340,16 @@ const Home: NextPage = () => {
                             </Toolbar>
                         </AppBar>
                     </Box>
-                    <Factory data={data} />
-                    <Robots data={data} />
+                    {factory.success ? (
+                        <div style={{ fontSize: 40, color: 'green', padding: '20%' }}>
+                            30 Robots ! Success !
+                        </div>
+                    ) : (
+                        <>
+                            <Factory data={data} />
+                            <Robots data={data} />
+                        </>
+                    )}
                 </main>
             </CssBaseline>
         </ThemeProvider>

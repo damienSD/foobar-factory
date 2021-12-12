@@ -28,62 +28,62 @@ class Activity(object):
 class Foo(Activity):
     ''' Mine Foo takes 1 second '''
     time = lambda self: 1
-    done = lambda self: redis.incr('stock:foos')
+    done = lambda self: redis.incr('stock:foos') and redis.incr('historic:foos')
 
 
 class Bar(Activity):
     ''' Mine Bar takes randomly between 0.5 and 2 seconds'''
     time = lambda self: random.uniform(0.5, 2)
-    done = lambda self: redis.incr('stock:bars')
+    done = lambda self: redis.incr('stock:bars') and redis.incr('historic:bars')
 
 
 class Robot:
     ''' Robot attributes and storage '''
-    foos: int = 0
-    bars: int = 0
-    foobars_built: int = 0
     activity : Activity = None
     index: int = ROBOT_INDEX
 
 
     async def work(self): 
-        ''' Describe each work frame session '''
 
-        foos = int(redis.get('stock:foos') or 0)
-        bars = int(redis.get('stock:bars') or 0)
+        if not redis.get('factory:success'):
 
-        # The first thing to do is building foobar if foos  and bars:
-        if foos and bars: # PATCH: let's new robot coming for 6 foos some day...
-            # use 1 foo 1 bar to build foobar
-            redis.decr('stock:foos')
-            redis.decr('stock:bars')
+            ''' Describe each work frame session '''
 
-            # Building foobar engage 2 seconds working penality
-            await self.do(delay=2, activity='foobar', message='Building foobar for 2 seconds and 60% success rate')
+            foos = int(redis.get('stock:foos') or 0)
+            bars = int(redis.get('stock:bars') or 0)
 
-            # Build foobar success rate 60%
-            if self.activity.success_on(60): 
-                redis.incr('stock:foobars')
-                redis.incr('built:foobars')
-                await self.do(message='Foobar built successfuly')
-         
+            # The first thing to do is building foobar if foos  and bars:
+            if foos > 6 and bars: # PATCH: let's new robot coming for 6 foos some day...
+                # use 1 foo 1 bar to build foobar
+                redis.decr('stock:foos')
+                redis.decr('stock:bars')
+
+                # Building foobar engage 2 seconds working penality
+                await self.do(delay=2, activity='foobar', message='Building foobar for 2 seconds and 60% success rate')
+
+                # Build foobar success rate 60%
+                if self.activity.success_on(60): 
+                    redis.incr('stock:foobars')
+                    redis.incr('historic:foobars')
+                    await self.do(message='Foobar built successfuly')
+            
+                else:
+                    redis.incr('stock:bars')
+                    await self.do(message='Foobar build failed, releasing 1 bar')
+            
             else:
-                redis.incr('stock:bars')
-                await self.do(message='Foobar build failed, releasing 1 bar')
-        
-        else:
 
-            # Randomly make the ressource type choice (Foo or bar)
-            activity: Activity = random.choice([Foo, Bar])()
+                # Randomly make the ressource type choice (Foo or bar)
+                activity: Activity = random.choice([Foo, Bar])()
 
-            # An previous activity change engage 5 seconds moving penality
-            if self.activity and not isinstance( activity, type(self.activity) ):    
-                await self.do(delay=5, activity='change', message=f'Changing activity from {self.activity} to {activity}, 5 seconds waiting')
+                # An previous activity change engage 5 seconds moving penality
+                if self.activity and not isinstance( activity, type(self.activity) ):    
+                    await self.do(delay=5, activity='change', message=f'Changing activity from {self.activity} to {activity}, 5 seconds waiting')
 
-            # Set the new activity as mining resource
-            self.activity = activity
-            await self.do(delay=self.activity.duration, activity=str(self.activity), message=f'Mining {self.activity} for {self.activity.duration} seconds')
-            self.activity.done()
+                # Set the new activity as mining resource
+                self.activity = activity
+                await self.do(delay=self.activity.duration, activity=str(self.activity), message=f'Mining {self.activity} for {self.activity.duration} seconds')
+                self.activity.done()
             
     async def do(self, delay=None, activity=None, message=None, quiet=False): 
         if activity:
