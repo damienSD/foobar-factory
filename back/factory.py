@@ -14,7 +14,7 @@ FOOBAR_PRICE = float(os.environ.get('FOOBAR_PRICE', "1"))
 
 client = docker.DockerClient(base_url="unix://var/run/docker.sock")
 redis = redis.Redis(host=REDIS_NAME, port=6379, db=0, charset="utf-8", decode_responses=True)
-abstract_time = lambda seconds: SPEED_FACTOR * seconds
+abstract_time = lambda seconds: seconds / min(10, max(1, SPEED_FACTOR))
 
 
 class Factory:

@@ -12,7 +12,7 @@ SPEED_FACTOR = float(os.environ.get("SPEED_FACTOR", "1"))
 ROBOT_INDEX = os.environ.get("ROBOT_INDEX")
 
 redis = redis.Redis(host=REDIS_NAME, port=6379, db=0, charset="utf-8", decode_responses=True)
-abstract_time = lambda seconds: SPEED_FACTOR * seconds
+abstract_time = lambda seconds: seconds / min(10, max(1, SPEED_FACTOR))
 
 
 class Activity(object):

@@ -41,10 +41,13 @@ cd foobar-factory/
 ```
 You can tweek the time factor and the fooBar price
 
-```
-SPEED_FACTOR=2 ./do dev
+```bash
+# Make the process 3x faster
+SPEED_FACTOR=3 ./do dev 
+# Make the foobar price half decrease
 FOOBAR_PRICE=0.5 ./do dev
-SPEED_FACTOR=4 FOOBAR_PRICE=3 ./do dev
+# Both parameters for extra speed
+SPEED_FACTOR=10 FOOBAR_PRICE=3 ./do dev
 ```
 
 
