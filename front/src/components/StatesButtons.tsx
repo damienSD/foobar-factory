@@ -1,10 +1,11 @@
 import React from 'react'
 import * as _ from 'lodash'
-import { FormGroup, FormControlLabel, Switch, Tooltip } from '@mui/material'
+import { FormGroup, FormControlLabel, Switch, Tooltip, Button } from '@mui/material'
+import DangerousIcon from '@mui/icons-material/Dangerous'
 
 type FactoryAction = 'stop' | 'start' | 'reset'
 
-export default ({ data }) => {
+const ProductionButton = ({ data }) => {
     const started = data.factory?.started ?? false
     const handleChangeFactoryState = (action: FactoryAction) => () => {
         fetch(`/api/${action}/`)
@@ -14,6 +15,7 @@ export default ({ data }) => {
             <FormControlLabel
                 control={
                     <Switch
+                        color="success"
                         checked={started}
                         onChange={handleChangeFactoryState(started ? 'stop' : 'start')}
                     />
@@ -31,3 +33,23 @@ export default ({ data }) => {
         </FormGroup>
     )
 }
+
+const ResetButton = ({ data }) => {
+    const handleReset = () => {
+        fetch(`/api/reset/`)
+    }
+    return (
+        <FormGroup>
+            <Button
+                startIcon={<DangerousIcon />}
+                color="error"
+                varaint="contained"
+                onClick={handleReset}
+            >
+                Reset
+            </Button>
+        </FormGroup>
+    )
+}
+
+export { ProductionButton, ResetButton }

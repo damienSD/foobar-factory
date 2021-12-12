@@ -1,135 +1,115 @@
-"""  """
+'''  '''
 import asyncio
 import os
 import random
-from typing import Callable
 
-import redis
+from activity import Activity
+from factory import (FACTORY_STARTED, FACTORY_SUCCESS, STOCK_BARS,
+                     STOCK_FOOBARS, STOCK_FOOS, abstract_time, redis)
 
-NETWORK_NAME = os.environ.get("NETWORK_NAME")
-REDIS_NAME = os.environ.get("REDIS_NAME")
-SPEED_FACTOR = float(os.environ.get("SPEED_FACTOR", "1"))
 ROBOT_INDEX = os.environ.get("ROBOT_INDEX")
-
-redis = redis.Redis(host=REDIS_NAME, port=6379, db=0, charset="utf-8", decode_responses=True)
-abstract_time = lambda seconds: seconds / min(10, max(1, SPEED_FACTOR))
-
-
-class Activity(object):
-    """A generic resource activity type"""
-
-    time: Callable[[], float]
-    done = Callable
-    duration: float
-    success_on = lambda self, percent: random.random() <= float(percent / 100)
-
-    def __init__(self):
-        self.duration = self.time()
-
-    def __repr__(self):
-        return self.__class__.__name__
-
-    def __str__(self):
-        return self.__class__.__name__.lower()
-
+ROBOT_ROOT = f"robots:b{ROBOT_INDEX}"
+ROBOT_ACTIVITY = f"{ROBOT_ROOT}:activity"
+ROBOT_MESSAGE = f"{ROBOT_ROOT}:message"
+ROBOT_WAITING = f"{ROBOT_ROOT}:waiting"
+ROBOT_HISTORIC = f"{ROBOT_ROOT}:historic"
+ROBOT_HISTORIC_FOOS = f"{ROBOT_HISTORIC}:foos"
+ROBOT_HISTORIC_BARS = f"{ROBOT_HISTORIC}:bars"
+ROBOT_HISTORIC_FOOBARS = f"{ROBOT_HISTORIC}:foobars"
+ROBOT_HISTORIC_FOOBARS_FAILS = f"{ROBOT_HISTORIC}:foobarsFails"
 
 class Foo(Activity):
     """Mine Foo takes 1 second"""
-
     time = lambda self: 1
-    done = lambda self: redis.incr("stock:foos") and redis.incr("historic:foos")
+    done = lambda self: redis.incr(STOCK_FOOS) and redis.incr(ROBOT_HISTORIC_FOOS)
 
 
 class Bar(Activity):
     """Mine Bar takes randomly between 0.5 and 2 seconds"""
-
     time = lambda self: random.uniform(0.5, 2)
-    done = lambda self: redis.incr("stock:bars") and redis.incr("historic:bars")
-
+    done = lambda self: redis.incr(STOCK_BARS) and redis.incr(ROBOT_HISTORIC_BARS)
 
 class Robot:
     """Robot attributes and storage"""
 
     activity: Activity = None
-    index: int = ROBOT_INDEX
 
     async def work(self):
+        """Describe each work frame session"""
 
-        if not redis.get("factory:success"):
+        foos = int(redis.get(STOCK_FOOS) or 0)
+        bars = int(redis.get(STOCK_BARS) or 0)
 
-            """Describe each work frame session"""
+        # The first thing to do is building foobar if foos  and bars:
+        if foos > 6 and bars:  # PATCH: let's new robot coming for 6 foos some day...
+            # use 1 foo 1 bar to build foobar
+            redis.decr(STOCK_FOOS)
+            redis.decr(STOCK_BARS)
 
-            foos = int(redis.get("stock:foos") or 0)
-            bars = int(redis.get("stock:bars") or 0)
+            # Building foobar engage 2 seconds working penality
+            await self.do(delay=2, activity="foobar", message="Building foobar for 2 seconds and 60% success rate")
 
-            # The first thing to do is building foobar if foos  and bars:
-            if foos > 6 and bars:  # PATCH: let's new robot coming for 6 foos some day...
-                # use 1 foo 1 bar to build foobar
-                redis.decr("stock:foos")
-                redis.decr("stock:bars")
-
-                # Building foobar engage 2 seconds working penality
-                await self.do(delay=2, activity="foobar", message="Building foobar for 2 seconds and 60% success rate")
-
-                # Build foobar success rate 60%
-                if self.activity.success_on(60):
-                    redis.incr("stock:foobars")
-                    redis.incr("historic:foobars")
-                    await self.do(message="Foobar built successfuly")
-
-                else:
-                    redis.incr("stock:bars")
-                    redis.incr("historic:foobarsFailed")
-                    await self.do(message="Foobar build failed, releasing 1 bar")
+            # Build foobar success rate 60%
+            if self.activity.success_on(60):
+                redis.incr(STOCK_FOOBARS)
+                redis.incr(ROBOT_HISTORIC_FOOBARS)
+                await self.do(message="Foobar built successfuly")
 
             else:
+                redis.incr(STOCK_BARS)
+                redis.incr(ROBOT_HISTORIC_FOOBARS_FAILS)
+                await self.do(message="Foobar build failed, releasing 1 bar")
 
-                # Randomly make the ressource type choice (Foo or bar)
-                activity: Activity = random.choice([Foo, Bar])()
+        # IF there is no foobars to build, let's go mining..
+        else:
 
-                # An previous activity change engage 5 seconds moving penality
-                if self.activity and not isinstance(activity, type(self.activity)):
-                    await self.do(
-                        delay=5,
-                        activity="change",
-                        message=f"Changing activity from {self.activity} to {activity}, 5 seconds waiting",
-                    )
+            # Randomly takes a new activity (Foo or bar)
+            activity: Activity = random.choice([Foo, Bar])()
 
-                # Set the new activity as mining resource
-                self.activity = activity
+            # An previous activity change engage 5 seconds moving penality
+            if self.activity and not isinstance(activity, type(self.activity)):
                 await self.do(
-                    delay=self.activity.duration,
-                    activity=str(self.activity),
-                    message=f"Mining {self.activity} for {self.activity.duration} seconds",
+                    delay=5,
+                    activity="change",
+                    message=f"Changing activity from {self.activity} to {activity}, 5 seconds waiting",
                 )
-                self.activity.done()
+
+            # Set the new activity as mining resource
+            self.activity = activity
+            await self.do(
+                delay=self.activity.duration,
+                activity=str(self.activity),
+                message=f"Mining {self.activity} for {self.activity.duration} seconds",
+            )
+            self.activity.done()
 
     async def do(self, delay=None, activity=None, message=None, quiet=False):
+        """ Update states and messages """
         if activity:
-            not quiet and redis.set(f"robots:{self.index}:activity", activity)
+            not quiet and redis.set(ROBOT_ACTIVITY, activity)
         if message:
             await self.info(message)
-            not quiet and redis.set(f"robots:{self.index}:message", message)
+            not quiet and redis.set(ROBOT_MESSAGE, message)
         if delay:
-            redis.set(f"robots:{self.index}:waiting", delay if not quiet else -1 )
+            redis.set(ROBOT_WAITING, delay if not quiet else -1 )
             await asyncio.sleep(abstract_time(delay))
-            redis.delete(f"robots:{self.index}:waiting")
+            redis.delete(ROBOT_WAITING)
 
     async def info(self, message):
         print(message)
 
 
-async def start():
-    """ """
-    robot = Robot()
-    await robot.info(f"[Robot created {robot.index}]")
-
-    while True:
-        if redis.get("factory:started"):
-            await robot.work()
-        await robot.do(delay=1, message="Waiting", quiet=True)
+    async def init(self):
+        """ """
+        await robot.info(f"[Robot initialized {ROBOT_INDEX}]")
+        while True:
+            if redis.get(FACTORY_STARTED) and not redis.get(FACTORY_SUCCESS):
+                await self.work()
+            else:
+                await self.do(delay=1, message="Waiting", quiet=True)
 
 
 if __name__ == "__main__":
     """ """
-    asyncio.run(start())
+    robot = Robot()
+    asyncio.run(robot.init())

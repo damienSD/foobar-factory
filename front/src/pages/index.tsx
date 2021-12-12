@@ -3,11 +3,19 @@ import React from 'react'
 import Head from 'next/head'
 import * as _ from 'lodash'
 import { createTheme } from '@mui/material/styles'
-import { AppBar, Toolbar, Box, Typography, ThemeProvider, CssBaseline } from '@mui/material'
+import {
+    AppBar,
+    Toolbar,
+    Box,
+    Typography,
+    ThemeProvider,
+    CssBaseline,
+    LinearProgress,
+} from '@mui/material'
 import Factory from '../components/Factory'
 import Robots from '../components/Robots'
 import Counters from '../components/Counters'
-import ProductionButton from '../components/ProductionButton'
+import { ProductionButton, ResetButton } from '../components/StatesButtons'
 
 const theme = createTheme({
     palette: {
@@ -47,13 +55,29 @@ const Home: NextPage = () => {
 
                 <main>
                     <Box sx={{ flexGrow: 1 }}>
+                        <AppBar position="static" sx={{ background: '#121212' }}>
+                            <Toolbar>
+                                <Typography
+                                    variant="h6"
+                                    component="div"
+                                    sx={{ flexGrow: 1 }}
+                                ></Typography>
+                                <Counters data={data} />
+                            </Toolbar>
+                        </AppBar>
                         <AppBar position="static">
                             <Toolbar>
                                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                                    Foobar factory
+                                    Foobar factory{' '}
+                                    <CircularProgressWithLabel
+                                        value={Math.round(
+                                            (_.keys(data?.robots).length * 100) / 30,
+                                            2
+                                        )}
+                                    />
                                 </Typography>
-                                <Counters data={data} />
                                 <ProductionButton data={data} />
+                                <ResetButton data={data} />
                             </Toolbar>
                         </AppBar>
                     </Box>
@@ -74,3 +98,18 @@ const Home: NextPage = () => {
 }
 
 export default Home
+
+function CircularProgressWithLabel(props) {
+    return (
+        <Box sx={{ display: 'flex', alignItems: 'center', width: 300 }}>
+            <Box sx={{ width: '100%', mr: 1 }}>
+                <LinearProgress variant="determinate" {...props} />
+            </Box>
+            <Box sx={{ minWidth: 35 }}>
+                <Typography variant="body2" color="text.secondary">{`${Math.round(
+                    props.value
+                )}%`}</Typography>
+            </Box>
+        </Box>
+    )
+}

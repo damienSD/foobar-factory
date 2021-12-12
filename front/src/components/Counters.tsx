@@ -6,6 +6,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import CodeIcon from '@mui/icons-material/Code'
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing'
+import LocalAtmIcon from '@mui/icons-material/LocalAtm'
 
 const Counter = ({ children, color, value: incomingValue, icon }) => {
     const [value, setValue] = React.useState(incomingValue)
@@ -48,7 +49,7 @@ const Counters = ({ data }) => {
     return (
         <Stack direction="row" spacing={2} marginRight={5}>
             <Counter
-                value={_.keys(robots).length - 1}
+                value={_.keys(robots).length}
                 color="gray"
                 icon={<PrecisionManufacturingIcon />}
             >
@@ -63,8 +64,8 @@ const Counters = ({ data }) => {
             <Counter value={stock.foobars} color="#f79f25" icon={<CodeIcon />}>
                 FooBars
             </Counter>
-            <Counter value={historic.foobarsFailed} color="#f25348" icon={<CodeIcon />}>
-                FooBars failed
+            <Counter value={historic.sells} color="white" icon={<LocalAtmIcon />}>
+                Sells
             </Counter>
             <Counter value={stock.credits} color="#38b6fc" icon={<EuroIcon />}>
                 Credits

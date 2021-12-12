@@ -39,9 +39,29 @@ import FactoryIcon from '@mui/icons-material/Factory'
 
 type FactoryAction = 'stop' | 'start'
 
+const Info = (props) => (
+    <Typography
+        {...props}
+        sx={{ display: 'inline', marginRight: 2 }}
+        component="span"
+        variant="body2"
+    >
+        {props.children} {'  '}
+    </Typography>
+)
+
 const Factory = ({ data = {} }) => {
-    const { factory = {}, historic = {} } = data
+    const { factory = {}, historic = {}, robots = {} } = data
     const { activity, waiting, message } = factory
+
+    const robotsArray = _.map(robots)
+    const foosHistoric = _.sumBy(robotsArray, (i) => parseInt(i.historic?.foos || 0))
+    const barsHistoric = _.sumBy(robotsArray, (i) => parseInt(i.historic?.bars || 0))
+    const foobarsHistoric = _.sumBy(robotsArray, (i) => parseInt(i.historic?.foobars || 0))
+    const foobarsFailedHistoric = _.sumBy(robotsArray, (i) =>
+        parseInt(i.historic?.foobarsFails || 0)
+    )
+
     return (
         <div className="factory">
             <div>
@@ -69,11 +89,11 @@ const Factory = ({ data = {} }) => {
                         primary={
                             <div>
                                 {activity}
-                                {activity && waiting ? (
+                                {activity && waiting > 0 ? (
                                     <span>
                                         &nbsp;for
                                         <span style={{ color: 'orange' }}>
-                                            &nbsp;{Math.round(waiting, 2)}s.
+                                            &nbsp;{_.slice(waiting, 0, 4)}s.
                                         </span>
                                     </span>
                                 ) : null}
@@ -81,27 +101,21 @@ const Factory = ({ data = {} }) => {
                         }
                         secondary={
                             <React.Fragment>
-                                <Typography
-                                    sx={{ display: 'inline' }}
-                                    component="span"
-                                    variant="body2"
-                                    color="text.primary"
-                                >
-                                    Details:
-                                </Typography>
+                                <Info color="text.primary">Details:</Info>
                                 &nbsp;{message || 'waiting'}
                                 <br />
-                                <Typography
-                                    sx={{ display: 'inline' }}
-                                    component="span"
-                                    variant="body2"
-                                    color="text.primary"
-                                >
-                                    Historic:
-                                </Typography>
-                                &nbsp; Foos collected: {historic.foos}, Bars collected:
-                                {historic.bars}, FooBars assembled: {historic.foobars}, Credits
-                                gains: {historic.credits}
+                                <Info color="text.primary">Historic:</Info>
+                                <Info>Foos collected: {foosHistoric}</Info>
+                                <Info>
+                                    Bars collected:
+                                    {barsHistoric}
+                                </Info>
+                                <Info>FooBars assembled: {foobarsHistoric}</Info>
+                                <Info color="error">FooBars failed: {foobarsFailedHistoric}</Info>
+                                <Info>
+                                    Credits gains:
+                                    {historic.credits}
+                                </Info>
                             </React.Fragment>
                         }
                     />

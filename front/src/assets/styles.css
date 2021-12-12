@@ -25,3 +25,7 @@
     border-image: initial;
     margin-bottom: 25px;
 }
+.factory > div,
+.robots > div {
+    width: 100%;
+}
