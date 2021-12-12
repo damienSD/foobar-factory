@@ -35,12 +35,16 @@ poste de travail, cela l'occupe pendant 5s.
 ```bash
 git clone https://github.com/damienSD/foobar-factory.git foobar-factory
 cd foobar-factory/
-./do start
-```
-or
-```bash
 ./do dev
 # for the developpement stack, that give more verbosity in standard ouput and nextJS dev mode
+# you can also ./do start but typescript compilation will failed for now
+```
+You can tweek the time factor and the fooBar price
+
+```
+SPEED_FACTOR=2 ./do dev
+FOOBAR_PRICE=0.5 ./do dev
+SPEED_FACTOR=4 FOOBAR_PRICE=3 ./do dev
 ```
 
 
@@ -62,6 +66,7 @@ Check "Start production" on the switch button
 - The factory is started by button click event
 - Each robot and factory loop frames at startup
 - As soon as possible a new robot is bought and a new container is pulled out
+- 30 Robots == victory
 
 
 # In DEV commands

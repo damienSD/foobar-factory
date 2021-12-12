@@ -173,8 +173,8 @@ const Factory = ({ data = {} }) => {
     )
 }
 
-const Robots = ({ data = {} }) => {
-    const { robots = [] } = data
+const Robots = ({ data }) => {
+    const { robots = [] } = data || {}
     return (
         <div className="robots">
             <div>
@@ -190,9 +190,9 @@ const Robots = ({ data = {} }) => {
     )
 }
 
-const Robot = ({ data = {}, index, robots = [] }) => {
+const Robot = ({ data, index, robots = [] }) => {
     const robotsCount = _.keys(robots).length
-    const { activity, waiting, message } = data
+    const { activity, waiting, message } = data || {}
 
     let image = robotWaiting
     let title = activity
