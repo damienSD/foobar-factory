@@ -1,4 +1,23 @@
-.MuiTooltip {
-    /* font-size: 24px; */
+.MuiTooltip-tooltip {
+   font-size: 24px;
     padding: 5px 15px;
+}
+.factory,
+.robots {
+    border-radius: 10px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    position: relative;
+    outline: 0px;
+    margin: 15px;
+    display: flex;
+    -webkit-box-pack: center;
+    justify-content: left;
+    padding: 24px;
+    background-color: #181818;
+    border-width: 1px 0px;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.12);
+    border-image: initial;
+    margin-bottom: 25px;
 }

@@ -53,47 +53,48 @@ class Robot:
         bars = int(redis.get('stock:bars') or 0)
 
         # The first thing to do is building foobar if foos  and bars:
-        if foos > 6 and bars: # PATCH: let's new robot coming for 6 foos some day...
+        if foos and bars: # PATCH: let's new robot coming for 6 foos some day...
             # use 1 foo 1 bar to build foobar
             redis.decr('stock:foos')
             redis.decr('stock:bars')
 
             # Building foobar engage 2 seconds working penality
-            await self.do(message='Building foobar for 2 seconds and 60% success rate')
-            await self.wait(2, 'foobar')
+            await self.do(delay=2, activity='foobar', message='Building foobar for 2 seconds and 60% success rate')
 
             # Build foobar success rate 60%
             if self.activity.success_on(60): 
                 redis.incr('stock:foobars')
                 redis.incr('built:foobars')
                 await self.do(message='Foobar built successfuly')
+         
             else:
                 redis.incr('stock:bars')
-                await self.info()
                 await self.do(message='Foobar build failed, releasing 1 bar')
+        
+        else:
 
-        # Randomly make the ressource type choice (Foo or bar)
-        activity: Activity = random.choice([Foo, Bar])()
+            # Randomly make the ressource type choice (Foo or bar)
+            activity: Activity = random.choice([Foo, Bar])()
 
-        # An previous activity change engage 5 seconds moving penality
-        if self.activity and not isinstance( activity, type(self.activity) ):    
-            await self.do(delay=5, activity='change', message=f'Changing activity from {self.activity} to {activity}, 5 seconds waiting')
+            # An previous activity change engage 5 seconds moving penality
+            if self.activity and not isinstance( activity, type(self.activity) ):    
+                await self.do(delay=5, activity='change', message=f'Changing activity from {self.activity} to {activity}, 5 seconds waiting')
 
-        # Set the new activity as mining resource
-        self.activity = activity
-        await self.do(delay=self.activity.duration, activity=str(self.activity), message=f'Mining {self.activity} for {self.activity.duration} seconds')
-        self.activity.done()
+            # Set the new activity as mining resource
+            self.activity = activity
+            await self.do(delay=self.activity.duration, activity=str(self.activity), message=f'Mining {self.activity} for {self.activity.duration} seconds')
+            self.activity.done()
             
-    async def do(self, delay=None, activity=None, message=None): 
+    async def do(self, delay=None, activity=None, message=None, quiet=False): 
         if activity:
-            redis.set(f'robots:{self.index}:activity', activity)
+            not quiet and redis.set(f'robots:{self.index}:activity', activity)
         if message:
             await self.info(message)
-            redis.set(f'robots:{self.index}:message', message)
+            not quiet and redis.set(f'robots:{self.index}:message', message)
         if delay:
-            redis.set(f'robots:{self.index}:waiting', delay)
+            not quiet and redis.set(f'robots:{self.index}:waiting', delay)
             await asyncio.sleep(abstract_time(delay))
-            redis.delete(f'robots:{self.index}:waiting')
+            not quiet and redis.delete(f'robots:{self.index}:waiting')
 
     async def info(self, message):
         print(message)
@@ -107,7 +108,7 @@ async def start():
     while True: 
         if redis.get('factory:started'):
             await robot.work()
-        await robot.do(delay=1, message="Waiting")
+        await robot.do(delay=1, message="Waiting", quiet=True)
 
 if __name__ == '__main__':
     '''  '''

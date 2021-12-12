@@ -18,44 +18,42 @@ abstract_time = lambda seconds: SPEED_FACTOR * seconds
 
 
 class Factory:
-    credits: int = 0
-    foobars: int = 0
     robots = []
 
-    async def wait(self, delay, task='waiting'): 
-        redis.set(f'factory:{task}', delay)
-        if delay:
-            await asyncio.sleep(abstract_time(delay))
-        redis.delete(f'factory:{task}')
-
-    async def info(self, message):
-        print(message)
-
-    async def work(self):   
-        
+    async def work(self):         
         
         # Buy a new robot for 3 credit et 6 foos
         credits = float(redis.get('stock:credits') or 0)
-        foos = int(redis.get('foos') or 0)
+        foos = int(redis.get('stock:foos') or 0)
+
         if credits >= 3.0 and foos >= 6:
-            redis.set('factory:buying', 1)
-            redis.decrbyfloat('stock:credits', 3)
+            redis.decrby('stock:credits', 3)
             redis.decrby('stock:foos', 6)
-            await self.info(f'''Buying 1 new robot''')
+            await self.do(activity='buying', message=f'''Buying 1 new robot''')            
             await self.add_robot()
-            redis.delete(f'factory:buying')
 
         # Selling foobars available
         foobars_to_sell = min(5, int(redis.get('stock:foobars') or 0))
         if foobars_to_sell:
-            redis.set('factory:selling', foobars_to_sell)
-            await self.info(f'''Selling {foobars_to_sell} foobar{"s" if foobars_to_sell > 1 else ""}''')
-            await self.wait(10, 'selling')
-            redis.incrbyfloat('stock:credits', float(foobars_to_sell * FOOBAR_PRICE))
+            amount = float(foobars_to_sell * FOOBAR_PRICE)
+            await self.do(delay=10, activity='selling', message=f'''Selling {foobars_to_sell} foobar{"s" if foobars_to_sell > 1 else ""} for {amount}€''')
+            redis.incrbyfloat('stock:credits', amount)
             redis.decrby('stock:foobars', foobars_to_sell)
             redis.delete(f'factory:selling')
 
+    async def do(self, delay=None, activity=None, message=None, quiet=False): 
+        if activity:
+            not quiet and redis.set(f'factory:activity', activity)
+        if message:
+            await self.info(message)
+            not quiet and redis.set(f'factory:message', message)
+        if delay:
+            not quiet and redis.set(f'factory:waiting', delay)
+            await asyncio.sleep(abstract_time(delay))
+            not quiet and redis.delete(f'factory:waiting')
 
+    async def info(self, message):
+        print(message)
 
     async def add_robot(self):    
         index = len(self.robots) + 1
@@ -70,15 +68,13 @@ class Factory:
         )
         self.robots.append(robot)
 
-
     async def add_redis(self):
         client.containers.run(
             "redis",
             name=REDIS_NAME,
             network=NETWORK_NAME,
             detach=True
-        )
- 
+        ) 
 
 
 async def start():
@@ -97,8 +93,7 @@ async def start():
     redis.set('built:foobars', 0)
 
     while True:
-        await factory.work()        
-        await factory.wait(0)
+        await factory.work()
         event = redis.blpop(['start', 'stop'], timeout=1)
         if event:   
             match event[0]:

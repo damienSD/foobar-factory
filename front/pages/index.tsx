@@ -7,13 +7,11 @@ import robotFoo from './assets/robotFoo.png'
 import robotBar from './assets/robotBar.png'
 import robotFooBar from './assets/robotFooBar.png'
 import robotChange from './assets/robotChange.png'
+import robotWaiting from './assets/robotWaiting.png'
 import {
     Chip,
     Stack,
     Button,
-    Card,
-    CardHeader,
-    CardContent,
     Avatar,
     AppBar,
     Toolbar,
@@ -21,18 +19,23 @@ import {
     FormGroup,
     FormControlLabel,
     Switch,
-    IconButton,
     Typography,
     ThemeProvider,
     CssBaseline,
     Badge,
     Tooltip,
+    Divider,
 } from '@mui/material'
 import EuroIcon from '@mui/icons-material/Euro'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import CodeIcon from '@mui/icons-material/Code'
 import WatchLaterIcon from '@mui/icons-material/WatchLater'
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing'
+import ListItem from '@mui/material/ListItem'
+import ListItemText from '@mui/material/ListItemText'
+import ListItemAvatar from '@mui/material/ListItemAvatar'
+import FactoryIcon from '@mui/icons-material/Factory'
 
 type FactoryAction = 'stop' | 'start'
 
@@ -59,6 +62,13 @@ const Counters = ({ data }) => {
     const { robots = {}, stock = {} } = data
     return (
         <Stack direction="row" spacing={2} marginRight={5}>
+            <Counter
+                value={_.keys(robots).length - 1}
+                color="gray"
+                icon={<PrecisionManufacturingIcon />}
+            >
+                Robots
+            </Counter>
             <Counter value={stock.bars} color="#8d52fb" icon={<ChevronLeftIcon />}>
                 Bars
             </Counter>
@@ -71,54 +81,176 @@ const Counters = ({ data }) => {
             <Counter value={stock.credits} color="#38b6fc" icon={<EuroIcon />}>
                 Credits
             </Counter>
-            <Counter value={_.keys(robots).length} color="yellow" icon={<EuroIcon />}>
-                Robots
-            </Counter>
         </Stack>
     )
 }
 
-const Robot = ({ data, index }) => {
-    const { activity, waiting } = data
+const Factory = ({ data = {} }) => {
+    const { factory = {}, built = {} } = data
+    const { activity, waiting, message } = factory
+    return (
+        <div className="factory">
+            <div>
+                <Divider textAlign="left">
+                    <Chip label={<div>Factory</div>} />
+                </Divider>
+                <ListItem alignItems="flex-start">
+                    <ListItemAvatar sx={{ position: 'relative' }}>
+                        <Avatar>
+                            <FactoryIcon />
+                        </Avatar>
+                        {waiting > 0 && (
+                            <WatchLaterIcon
+                                style={{
+                                    position: 'absolute',
+                                    top: -20,
+                                    left: -20,
+                                    color: 'orange',
+                                }}
+                                sx={{ fontSize: 30 }}
+                            />
+                        )}
+                    </ListItemAvatar>
+                    <ListItemText
+                        primary={
+                            <div>
+                                {activity}
+                                {waiting ? (
+                                    <span>
+                                        &nbsp;for
+                                        <span style={{ color: 'orange' }}>
+                                            &nbsp;{Math.round(waiting, 2)}s.
+                                        </span>
+                                    </span>
+                                ) : null}
+                            </div>
+                        }
+                        secondary={
+                            <React.Fragment>
+                                <Typography
+                                    sx={{ display: 'inline' }}
+                                    component="span"
+                                    variant="body2"
+                                    color="text.primary"
+                                >
+                                    Details:
+                                </Typography>
+                                &nbsp;{message}
+                            </React.Fragment>
+                        }
+                    />
+                    {/* <ListItemText
+                        primary={'Historic'}
+                        secondary={
+                            <React.Fragment>
+                                <Typography
+                                    sx={{ display: 'inline' }}
+                                    component="span"
+                                    variant="body2"
+                                    color="text.primary"
+                                >
+                                    Details:
+                                </Typography>
+                                &nbsp;{message}
+                            </React.Fragment>
+                        }
+                    /> */}
+                </ListItem>
+            </div>
+        </div>
+    )
+}
+
+const Robots = ({ data = {} }) => {
+    const { robots = [] } = data
+    return (
+        <div className="robots">
+            <div>
+                {_.map(
+                    robots,
+                    (data, index) =>
+                        index != 0 && (
+                            <Robot key={index} data={data} index={index} robots={robots} />
+                        )
+                )}
+            </div>
+        </div>
+    )
+}
+
+const Robot = ({ data = {}, index, robots = [] }) => {
+    const robotsCount = _.keys(robots).length
+    const { activity, waiting, message } = data
 
     let image = robotWaiting
-    let title = 'Waiting'
     switch (activity) {
         case 'foo':
-            image = robotFOO
+            image = robotFoo
             break
         case 'bar':
-            image = robotBAR
+            image = robotBar
             break
         case 'foobar':
-            image = robotFOOBAR
+            image = robotFooBar
             break
         case 'change':
-            image = robotCHANGE
+            image = robotChange
+            break
+        case 'waiting':
+            image = robotWaiting
             break
     }
 
     return (
-        <Tooltip open={open} title={<div>Robot {index}</div>} arrow placement="top">
-            <div style={{ marginTop: 55 }}>
-                <Tooltip open={open} title={title} arrow style={{ fontSize: 15 }}>
-                    <div>
-                        <Tooltip
-                            open={waiting}
-                            title={
-                                <div>
-                                    <WatchLaterIcon /> {waiting}s.
-                                </div>
-                            }
-                            arrow
-                            placement="bottom-end"
-                        >
-                            <img src={image.src} height={100} />
-                        </Tooltip>
-                    </div>
-                </Tooltip>
-            </div>
-        </Tooltip>
+        <div>
+            <Divider textAlign="left">
+                <Chip label={<div>Robot {index}</div>} />
+            </Divider>
+            <ListItem alignItems="flex-start">
+                <ListItemAvatar sx={{ position: 'relative' }}>
+                    <Avatar src={image.src} sx={{ height: 70 }} />
+                    {waiting > 0 && (
+                        <WatchLaterIcon
+                            style={{
+                                position: 'absolute',
+                                top: -20,
+                                left: -20,
+                                color: 'orange',
+                            }}
+                            sx={{ fontSize: 30 }}
+                        />
+                    )}
+                </ListItemAvatar>
+                <ListItemText
+                    primary={
+                        <div>
+                            {activity}
+                            {waiting ? (
+                                <span>
+                                    &nbsp;for
+                                    <span style={{ color: 'orange' }}>
+                                        &nbsp;{Math.round(waiting, 2)}s.
+                                    </span>
+                                </span>
+                            ) : null}
+                        </div>
+                    }
+                    secondary={
+                        <React.Fragment>
+                            <Typography
+                                sx={{ display: 'inline' }}
+                                component="span"
+                                variant="body2"
+                                color="text.primary"
+                            >
+                                Details:
+                            </Typography>
+                            &nbsp;{message}
+                        </React.Fragment>
+                    }
+                />
+            </ListItem>
+        </div>
     )
 }
 
@@ -136,11 +268,10 @@ const Home: NextPage = () => {
         return () => clearInterval(interval)
     }, [])
 
-    const { factory = {}, robots = {}, stock = {}, built = {} } = data
-    console.log(data)
+    const { factory = {} } = data
+    // console.log(data)
 
     const started = factory.started ?? false
-    const shapeStyles = { bgcolor: 'primary.main', width: 40, height: 40 }
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline>
@@ -192,13 +323,8 @@ const Home: NextPage = () => {
                             </Toolbar>
                         </AppBar>
                     </Box>
-                    <Stack direction="row" spacing={5} padding={5}>
-                        {_.map(
-                            robots,
-                            (data, index) =>
-                                index != 0 && <Robot key={index} data={data} index={index} />
-                        )}
-                    </Stack>
+                    <Factory data={data} />
+                    <Robots data={data} />
                 </main>
             </CssBaseline>
         </ThemeProvider>
