@@ -79,6 +79,7 @@ class Robot:
 
                 else:
                     redis.incr("stock:bars")
+                    redis.incr("historic:foobarsFailed")
                     await self.do(message="Foobar build failed, releasing 1 bar")
 
             else:
@@ -110,9 +111,9 @@ class Robot:
             await self.info(message)
             not quiet and redis.set(f"robots:{self.index}:message", message)
         if delay:
-            not quiet and redis.set(f"robots:{self.index}:waiting", delay)
+            redis.set(f"robots:{self.index}:waiting", delay if not quiet else -1 )
             await asyncio.sleep(abstract_time(delay))
-            not quiet and redis.delete(f"robots:{self.index}:waiting")
+            redis.delete(f"robots:{self.index}:waiting")
 
     async def info(self, message):
         print(message)

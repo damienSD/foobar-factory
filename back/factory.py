@@ -50,10 +50,10 @@ class Factory:
         if message:
             await self.info(message)
             not quiet and redis.set(f'factory:message', message)
-        if delay:
-            not quiet and redis.set(f'factory:waiting', delay)
+        if delay:            
+            redis.set(f"factory:waiting", delay if not quiet else -1 )
             await asyncio.sleep(abstract_time(delay))
-            not quiet and redis.delete(f'factory:waiting')
+            redis.delete(f"factory:waiting")
 
     async def info(self, message):
         print(message)
@@ -98,6 +98,7 @@ async def start():
     redis.set('stock:foobars', 0)
     redis.set('stock:credits', 0)
     redis.set('historic:foobars', 0)
+    redis.set('historic:foobarsFailed', 0)
     redis.set('historic:foos', 0)
     redis.set('historic:bars', 0)
     redis.set('historic:credits', 0)

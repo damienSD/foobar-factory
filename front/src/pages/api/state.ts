@@ -12,15 +12,23 @@ console.log(REDIS_NAME)
     await redis.connect()
 })()
 
+declare global {
+    interface State {
+        factory?: any
+        stock?: any
+        robots?: any
+        historic?: any
+    }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
     const keys = await redis.keys('*')
     const values = await redis.mGet(keys)
-    const data = {}
+    const data: State = {}
 
     for (let i = 0; i < keys.length; i++) {
         _.set(data, keys[i].replace(/:/g, '.'), values[i])
     }
-
     res.status(200).json(data)
 }
 

@@ -1,6 +1,10 @@
 .MuiTooltip-tooltip {
-   font-size: 24px;
+   font-size: 20px;
     padding: 5px 15px;
+}
+.MuiBadge-badge {
+   font-weight: bold;
+
 }
 .factory,
 .robots {

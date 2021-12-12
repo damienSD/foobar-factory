@@ -15,8 +15,6 @@ PORT=8000
 SPEED_FACTOR=${SPEED_FACTOR:-"1"}
 FOOBAR_PRICE==${FOOBAR_PRICE:-"1"}
 
-echo $SPEED_FACTOR
-
 ENVS="\
     --env PROJECT=$PROJECT \
     --env BACK_IMAGE=$BACK_IMAGE \
@@ -36,7 +34,7 @@ start() {
     docker build --quiet -t ${FRONT_IMAGE} ./front/ >/dev/null 2>&1
     docker network create  ${NETWORK_NAME}  >/dev/null 2>&1
     docker run -tti --detach $ENVS --name ${FACTORY_NAME} --network ${NETWORK_NAME} -v $(pwd)/back/:/app/ -v /var/run/docker.sock:/var/run/docker.sock ${BACK_IMAGE} >/dev/null 2>&1
-    docker run -tti --detach $ENVS --name ${FRONT_NAME} --network ${NETWORK_NAME} -p "$PORT:8000"  ${FRONT_IMAGE} >/dev/null 2>&1
+    docker run -tti --detach $ENVS --name ${FRONT_NAME} --network ${NETWORK_NAME} -p "$PORT:8000"  ${FRONT_IMAGE}  yarn run dev >/dev/null 2>&1
     waitAndDebug --filter "name=${FACTORY_NAME}" --filter "name=${ROBOT_NAME}"
     clean
 }
@@ -48,7 +46,7 @@ dev() {
     docker build  -t ${FRONT_IMAGE} ./front/ 
     docker network create  ${NETWORK_NAME} 
     docker run -tti --detach $ENVS --name ${FACTORY_NAME} --network ${NETWORK_NAME} -v $(pwd)/back/:/app/ -v /var/run/docker.sock:/var/run/docker.sock ${BACK_IMAGE}
-    docker run -tti --detach $ENVS --name ${FRONT_NAME} --network ${NETWORK_NAME} -p "$PORT:8000" -v $(pwd)/front/pages:/app/pages -v $(pwd)/front/package.json:/app/package.json -v $(pwd)/front/next.config.js:/app/next.config.js ${FRONT_IMAGE} yarn run dev 
+    docker run -tti --detach $ENVS --name ${FRONT_NAME} --network ${NETWORK_NAME} -p "$PORT:8000" -v $(pwd)/front/src:/app/src  -v $(pwd)/front/package.json:/app/package.json -v $(pwd)/front/next.config.js:/app/next.config.js ${FRONT_IMAGE} yarn run dev 
     docker run -tti --detach $ENVS --name ${PROJECT}-redis-admin -p "8081:8081" --network ${NETWORK_NAME} --env REDIS_HOSTS=local:$REDIS_NAME:6379 rediscommander/redis-commander:latest 
     waitAndDebug --filter "name=${PROJECT}*"
     clean
