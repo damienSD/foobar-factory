@@ -115,7 +115,7 @@ const Factory = ({ data = {} }) => {
                         primary={
                             <div>
                                 {activity}
-                                {waiting ? (
+                                {activity && waiting ? (
                                     <span>
                                         &nbsp;for
                                         <span style={{ color: 'orange' }}>
@@ -135,7 +135,7 @@ const Factory = ({ data = {} }) => {
                                 >
                                     Details:
                                 </Typography>
-                                &nbsp;{message}
+                                &nbsp;{message || 'n/a'}
                                 <br />
                                 <Typography
                                     sx={{ display: 'inline' }}
@@ -146,7 +146,8 @@ const Factory = ({ data = {} }) => {
                                     Historic:
                                 </Typography>
                                 &nbsp; Foos collected: {historic.foos}, Bars collected:
-                                {historic.bars}, FooBars assembled: {historic.foobars}
+                                {historic.bars}, FooBars assembled: {historic.foobars}, Credits
+                                gains: {historic.credits}
                             </React.Fragment>
                         }
                     />

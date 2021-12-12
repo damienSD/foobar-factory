@@ -28,9 +28,11 @@ ENVS="\
 "
 
 start() {
-    echo -e "[Foobar factory] Starting..."
+    echo -e "[Foobar factory] Building and starting..."
     clean
-    prepare
+    docker build --quiet -t ${BACK_IMAGE} ./back/  >/dev/null 2>&1
+    docker build --quiet -t ${FRONT_IMAGE} ./front/ >/dev/null 2>&1
+    docker network create  ${NETWORK_NAME}  >/dev/null 2>&1
     docker run -tti --detach $ENVS --name ${FACTORY_NAME} --network ${NETWORK_NAME} -v $(pwd)/back/:/app/ -v /var/run/docker.sock:/var/run/docker.sock ${BACK_IMAGE} >/dev/null 2>&1
     docker run -tti --detach $ENVS --name ${FRONT_NAME} --network ${NETWORK_NAME} -p "$PORT:8000" -v $(pwd)/front/:/app/ ${FRONT_IMAGE} >/dev/null 2>&1
     waitAndDebug --filter "name=${FACTORY_NAME}" --filter "name=${ROBOT_NAME}"
@@ -40,18 +42,14 @@ start() {
 dev() {
     echo -e "[Foobar factory] Starting dev..."
     clean
-    prepare
+    docker build  -t ${BACK_IMAGE} ./back/ 
+    docker build  -t ${FRONT_IMAGE} ./front/ 
+    docker network create  ${NETWORK_NAME} 
     docker run -tti --detach $ENVS --name ${FACTORY_NAME} --network ${NETWORK_NAME} -v $(pwd)/back/:/app/ -v /var/run/docker.sock:/var/run/docker.sock ${BACK_IMAGE}
     docker run -tti --detach $ENVS --name ${FRONT_NAME} --network ${NETWORK_NAME} -p "$PORT:8000" -v $(pwd)/front/pages:/app/pages -v $(pwd)/front/package.json:/app/package.json -v $(pwd)/front/next.config.js:/app/next.config.js ${FRONT_IMAGE} yarn run dev 
     docker run -tti --detach $ENVS --name ${PROJECT}-redis-admin -p "8081:8081" --network ${NETWORK_NAME} --env REDIS_HOSTS=local:$REDIS_NAME:6379 rediscommander/redis-commander:latest 
     waitAndDebug --filter "name=${PROJECT}*"
     clean
-}
-
-prepare() {
-    docker build --quiet -t ${BACK_IMAGE} ./back/  >/dev/null 2>&1
-    docker build --quiet -t ${FRONT_IMAGE} ./front/ >/dev/null 2>&1
-    docker network create  ${NETWORK_NAME}  >/dev/null 2>&1
 }
 
 clean() {
@@ -66,6 +64,7 @@ black() {
 }
 
 waitAndDebug() {
+    _browse "http://127.0.0.1:$PORT"
     names=("test")
     while [ true ]; do
 
@@ -90,5 +89,21 @@ end() {
 trap end EXIT
 trap end SIGINT
 
+_browse(){
+    url="$1"
+    if [ ! -z "$url" ]; then
+        if [ ! -z "$BROWSER" ]; then
+            $BROWSER $url
+        elif which xdg-open > /dev/null; then
+            xdg-open $url
+        elif which gnome-open > /dev/null; then
+            gnome-open $url
+        elif which open > /dev/null; then
+            /usr/bin/open $url
+        else
+            echo "Could not detect the web browser to use."
+        fi
+    fi
+}
 
 $@

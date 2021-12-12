@@ -45,6 +45,7 @@ or
 
 
 Open a browser at http://127.0.0.1:8000/ to get control of the Factory
+Check "Start production" on the switch button
 
 # Architecture explanation
 
