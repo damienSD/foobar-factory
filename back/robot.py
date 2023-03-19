@@ -51,13 +51,16 @@ class Robot:
 
             # Build foobar success rate 60%
             if self.activity.success_on(60):
+                # Increment total stock at time
                 redis.incr(STOCK_FOOBARS)
-                redis.incr(ROBOT_HISTORIC_FOOBARS)
+                # Increment historic total
+                redis.incr(ROBOT_HISTORIC_FOOBARS) 
+
                 await self.do(message="Foobar built successfuly")
 
             else:
                 redis.incr(STOCK_BARS)
-                redis.incr(ROBOT_HISTORIC_FOOBARS_FAILS)
+                redis.incr(ROBOT_HISTORIC_FOOBARS_FAILS)    
                 await self.do(message="Foobar build failed, releasing 1 bar")
 
         # IF there is no foobars to build, let's go mining..

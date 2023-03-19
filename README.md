@@ -1,21 +1,16 @@
 # Description
-
-Foobar factory is a experimental project act as a proof of skills (python, node, react, docker)
+Foobar factory is a experimental project as "a proof of skills" (python, node, react, docker)
 
 # requirements
-
 - Linux OS : centOS >= 8, or debian >= 9, or ubuntu >= 12 
 - docker [https://docs.docker.com/engine/install/] version >= 20.10.9
 - bash (Script Shell Interpreter) version >= 5.0.17
 
 # Rules
-
 ## Le but est de coder une chaîne de production automatique de foobar
-
 On dispose au départ de 2 robots, mais on souhaite accélérer la production pour
 prendre le contrôle du marché des foobar . Pour ce faire on va devoir acheter
 davantage de robots, le programme s'arrête quand on a 30 robots.
-
 ## Les robots sont chacun capables d'effectuer les activités suivantes :
 - Miner du foo : occupe le robot pendant 1 seconde.
 - Miner du bar : occupe le robot pendant un temps aléatoire compris entre 0.5
@@ -29,9 +24,12 @@ vendu
 
 A chaque changement de type d'activité, le robot doit se déplacer à un nouveau
 poste de travail, cela l'occupe pendant 5s.
+## Pistes d'améliorations du test
+- Le test démarre avec 20€, Un robot coute 5€ par minutes, si l'argent ateint 0 c'est perdu
+- Calculer l'indice de rentabilité et de productivité
+- Proposer un graphique d'évolution des credits pour justifier l'achat de robot
 
 # Getting started 
-
 ```bash
 git clone https://github.com/damienSD/foobar-factory.git foobar-factory
 cd foobar-factory/
@@ -55,9 +53,9 @@ Open a browser at http://127.0.0.1:8000/ to get control of the Factory
 Check "Start production" on the switch button
 
 # Architecture explanation
-
 ## This project is based on docker and engage 
 - Python for the factory and robot workers
+
 - Node for the frondend and the redis API
 - Redis as the storage backend (states, stocks, credits, foos, bars, counters)
 
@@ -73,7 +71,6 @@ Check "Start production" on the switch button
 
 
 # In DEV commands
-
 ```bash
 ./do clean
 ./do black

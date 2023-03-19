@@ -6,6 +6,7 @@ import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
 import FactoryIcon from '@mui/icons-material/Factory'
+import ChartViewer from './ChartViewer'
 
 const Factory = ({ data = {} }) => {
     const { factory = {}, historic = {}, robots = {} } = data
@@ -71,9 +72,47 @@ const Factory = ({ data = {} }) => {
                         }
                     />
                 </ListItem>
+                <MarketChart data={data} />
             </div>
         </div>
     )
+}
+
+const chartSeries = [
+    {
+        type: 'line',
+        name: 'Credits',
+        data: [],
+    },
+]
+
+let chartData = []
+const now = new Date().getTime()
+
+const MarketChart = ({ data: defaultData }) => {
+    const [data, updateData] = React.useState([])
+
+    React.useEffect(() => {
+        const id = setInterval(() => {
+            chartData = [...chartData, [Date.now(), parseFloat(defaultData?.stock?.credits || '0')]]
+            chartData.length > 50 && chartData.shift()
+
+            console.log(data)
+            updateData(chartData)
+        }, 1000)
+        return () => clearInterval(id)
+    }, [defaultData])
+
+    // React.useEffect(() => {
+    //     chartSeries[0].data.push({
+    //         y: data?.stock?.credits ?? 0,
+    //         x: new Date().getTime(),
+    //     })
+    //     console.log(data?.stock?.credits)
+    //     setSeries(_.map(chartSeries))
+    // }, [data])
+
+    return <ChartViewer data={data} title="-" />
 }
 
 const Info = (props) => (
